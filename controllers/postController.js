@@ -1,80 +1,145 @@
-// Import the Post model
 const Post = require('../models/post');
 
-// Controller to handle creating a post
-exports.createPost = async (req, res) => {
-    try {
-        const { title, content, userId } = req.body; // Assuming these fields are required
-        const post = await Post.create({ title, content, userId });
-        res.status(201).json(post);  // Return the created post as JSON
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to create post' });
-    }
+// Get all posts
+const getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    res.status(500).json({ 
+      message: "Error fetching posts", 
+      error: error.message 
+    });
+  }
 };
 
-// Controller to handle getting all posts
-exports.getAllPosts = async (req, res) => {
-    try {
-        const posts = await Post.findAll(); // Fetch all posts from the database
-        res.status(200).json(posts); // Return all posts as JSON
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to retrieve posts' });
+// Get a single post by ID
+const getPostById = async (req, res) => {
+  try {
+    const post = await Post.findByPk(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+    res.status(200).json(post);
+  } catch (error) {
+    console.error('Error fetching post:', error);
+    res.status(500).json({ 
+      message: "Error fetching post", 
+      error: error.message 
+    });
+  }
 };
 
-// Controller to handle getting a post by ID
-exports.getPostById = async (req, res) => {
-    const { id } = req.params; // Get the post ID from the request parameters
-    try {
-        const post = await Post.findByPk(id); // Find the post by primary key (ID)
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-        res.status(200).json(post); // Return the post as JSON
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to retrieve the post' });
+// Create a new post
+const createPost = async (req, res) => {
+  try {
+    const { title, category, content, user_id } = req.body;
+    
+    // Validate required fields
+    if (!title || !content || !user_id) {
+      return res.status(400).json({ 
+        message: "Missing required fields: title, content, and user_id are required" 
+      });
     }
+
+    // Log the incoming request data
+    console.log('Creating new post with data:', {
+      title,
+      category,
+      content,
+      user_id
+    });
+
+    const post = await Post.create({ 
+      title, 
+      category, 
+      content, 
+      user_id 
+    });
+
+    console.log('Post created successfully:', post.id);
+    res.status(201).json(post);
+  } catch (error) {
+    console.error('Error creating post:', error);
+    res.status(500).json({ 
+      message: "Error creating post", 
+      error: error.message 
+    });
+  }
 };
 
-// Controller to handle updating a post
-exports.updatePost = async (req, res) => {
-    const { id } = req.params; // Get the post ID from the request parameters
-    const { title, content } = req.body; // Get the updated fields from the request body
-    try {
-        const post = await Post.findByPk(id); // Find the post by primary key (ID)
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-        
-        // Update the post fields
-        post.title = title || post.title; 
-        post.content = content || post.content;
-        await post.save(); // Save the updated post
-
-        res.status(200).json(post); // Return the updated post as JSON
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to update the post' });
+// Update a post
+const updatePost = async (req, res) => {
+  try {
+    const { title, category, content } = req.body;
+    const post = await Post.findByPk(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+
+    // Update only provided fields
+    const updatedPost = await post.update({
+      title: title || post.title,
+      category: category || post.category,
+      content: content || post.content
+    });
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error('Error updating post:', error);
+    res.status(500).json({ 
+      message: "Error updating post", 
+      error: error.message 
+    });
+  }
 };
 
-// Controller to handle deleting a post
-exports.deletePost = async (req, res) => {
-    const { id } = req.params; // Get the post ID from the request parameters
-    try {
-        const post = await Post.findByPk(id); // Find the post by primary key (ID)
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-
-        // Delete the post
-        await post.destroy();
-        res.status(200).json({ message: 'Post deleted successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to delete the post' });
+// Delete a post
+const deletePost = async (req, res) => {
+  try {
+    const post = await Post.findByPk(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+
+    await post.destroy();
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ 
+      message: "Error deleting post", 
+      error: error.message 
+    });
+  }
+};
+
+// Get posts by user ID
+const getPostsByUser = async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      where: { user_id: req.params.userId },
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    res.status(500).json({ 
+      message: "Error fetching user posts", 
+      error: error.message 
+    });
+  }
+};
+
+module.exports = {
+  getAllPosts,
+  getPostById,
+  createPost,
+  updatePost,
+  deletePost,
+  getPostsByUser
 };

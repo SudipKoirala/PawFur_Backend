@@ -1,23 +1,22 @@
 const { Sequelize } = require('sequelize');
 
-// Setup the Sequelize instance to connect to the PostgreSQL database
-const sequelize = new Sequelize('pawfur', 'postgres', 'admin123', {
-    host: 'localhost',
-    dialect: 'postgres',
-    port: 5432,
-    logging: false,
+
+// Configure database connection
+const sequelize = new Sequelize('pawfur_db', 'postgres', 'admin123', {
+  host: 'localhost',
+  dialect: 'postgres',
 });
 
-// Function to test database connection
-async function testConnection() {
-    try {
-        await sequelize.authenticate();
-        console.log('DB connection successful');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
-}
+// Sync the models with the database
+const syncDatabase = async () => {
+  try {
+    await sequelize.sync({ alter: true }); // Sync models and create tables
+    console.log('Database synced successfully!');
+  } catch (error) {
+    console.error('Error syncing database:', error);
+  }
+};
 
-testConnection();  // Test the connection on app start
+syncDatabase();
 
 module.exports = sequelize;

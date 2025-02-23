@@ -1,39 +1,32 @@
-const express = require('express');
-const sequelize = require('./database/db');
-const setupAssociations = require('./relationships');  // For setting up model associations
-const User = require('./models/user');  // Import models so Sequelize recognizes them
-const Pet = require('./models/pet');
-const Post = require('./models/post');
+// index.js
 
-// Import route files
-const userRoutes = require('./routes/users');
-const petRoutes = require('./routes/pets');
-const postRoutes = require('./routes/posts');
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const sequelize = require('./database/db');  // Import Sequelize configuration
+const postRoutes = require('./routes/post');  // Import post routes
+const userRoutes = require('./routes/users');  // Import user routes
+
+dotenv.config();  // Load environment variables
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Call the function to set up relationships
-setupAssociations();
+app.use(cors());
+app.use(express.json());  // Middleware to parse JSON request bodies
 
-// Middleware to parse JSON requests
-app.use(express.json());
+// Use routes for user and post endpoints
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);  // Post route for creating a new post
+// index.js
+app.use('/uploads', express.static('uploads'));
+// Sync the database
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Database synced');
+  })
+  .catch((err) => {
+    console.error('Error syncing database:', err);
+  });
 
-// Mount the routes to the server
-app.use('/api/users', userRoutes);  // Handle routes related to users
-app.use('/api/pets', petRoutes);    // Handle routes related to pets
-app.use('/api/posts', postRoutes);  // Handle routes related to posts
-
-// Sync database
-sequelize.sync({ force: false })  // Set force to true for development if you want to reset tables
-    .then(() => {
-        console.log('Database synced successfully!');
-    })
-    .catch((err) => {
-        console.error('Failed to sync database:', err);
-    });
-
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server running on PORT ${PORT}`);
-});
+  const PORT = 5000;
+  app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
