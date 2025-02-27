@@ -1,4 +1,3 @@
-// models/user.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/db');
 
@@ -20,27 +19,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  // New fields for Settings
-  profilePic: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  petType: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  breed: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  age: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  postCount: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-  }
+
 }, {
   timestamps: true,
 });

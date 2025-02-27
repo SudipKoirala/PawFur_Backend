@@ -4,8 +4,7 @@ node_modules/
 # Environment files (for secrets and configurations)
 .env
 
-# Database files (if any, like SQLite)
-.db
+
 
 # Logs
 *.log

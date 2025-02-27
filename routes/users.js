@@ -7,20 +7,18 @@ const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
-// Configure multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/') // Make sure this directory exists
+    cb(null, 'uploads/') 
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname))
   }
 });
 
-// Configure multer upload
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 
   fileFilter: function (req, file, cb) {
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -34,12 +32,10 @@ const upload = multer({
   }
 });
 
-// Signup route
 router.post('/signup', async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ 
@@ -48,10 +44,8 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const newUser = await User.create({
       first_name: firstName,
       last_name: lastName,
@@ -59,10 +53,11 @@ router.post('/signup', async (req, res) => {
       password: hashedPassword,
     });
 
-    // Generate token
+
     const token = jwt.sign(
       { userId: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET || 'your_secret_key',
+JWT_SECRET=
+       '17d0ff32c98f397d6cf5dc569acf1d45f89321b1983a8003a29b38d8819107fa41624e69b1612a4774fa2a58c68e406d4b8648b81bc01c4071e01dd1c2121389',
       { expiresIn: "24h" }
     );
 
@@ -82,12 +77,10 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login route
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(400).json({ 
@@ -96,7 +89,6 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ 
@@ -104,8 +96,6 @@ router.post('/login', async (req, res) => {
         message: "Invalid credentials" 
       });
     }
-
-    // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET || 'your_secret_key',
@@ -128,7 +118,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get user profile
 router.get('/profile/:id', authMiddleware, async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -165,7 +154,6 @@ router.get('/profile/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Update user profile with image upload
 router.put('/profile/:id', [authMiddleware, upload.single('profilePic')], async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
@@ -177,19 +165,16 @@ router.put('/profile/:id', [authMiddleware, upload.single('profilePic')], async 
       });
     }
 
-    // Prepare update data
     const updateData = {
       petType: req.body.petType,
       breed: req.body.breed,
       age: req.body.age
     };
 
-    // Add profile picture path if a file was uploaded
     if (req.file) {
       updateData.profilePic = `/uploads/${req.file.filename}`;
     }
 
-    // Update user
     await user.update(updateData);
 
     res.json({ 
@@ -209,7 +194,6 @@ router.put('/profile/:id', [authMiddleware, upload.single('profilePic')], async 
   }
 });
 
-// Get user by ID (for public profile viewing)
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -236,7 +220,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Change password
 router.put('/change-password', authMiddleware, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -249,7 +232,6 @@ router.put('/change-password', authMiddleware, async (req, res) => {
       });
     }
 
-    // Verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ 
@@ -258,7 +240,6 @@ router.put('/change-password', authMiddleware, async (req, res) => {
       });
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await user.update({ password: hashedPassword });
 

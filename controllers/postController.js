@@ -1,6 +1,5 @@
 const Post = require('../models/post');
 
-// Get all posts
 const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.findAll({
@@ -16,7 +15,7 @@ const getAllPosts = async (req, res) => {
   }
 };
 
-// Get a single post by ID
+
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id);
@@ -33,19 +32,19 @@ const getPostById = async (req, res) => {
   }
 };
 
-// Create a new post
+
 const createPost = async (req, res) => {
   try {
     const { title, category, content, user_id } = req.body;
     
-    // Validate required fields
+ 
     if (!title || !content || !user_id) {
       return res.status(400).json({ 
         message: "Missing required fields: title, content, and user_id are required" 
       });
     }
 
-    // Log the incoming request data
+    
     console.log('Creating new post with data:', {
       title,
       category,
@@ -71,7 +70,7 @@ const createPost = async (req, res) => {
   }
 };
 
-// Update a post
+
 const updatePost = async (req, res) => {
   try {
     const { title, category, content } = req.body;
@@ -81,7 +80,7 @@ const updatePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Update only provided fields
+
     const updatedPost = await post.update({
       title: title || post.title,
       category: category || post.category,
@@ -98,7 +97,7 @@ const updatePost = async (req, res) => {
   }
 };
 
-// Delete a post
+
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id);
@@ -118,7 +117,7 @@ const deletePost = async (req, res) => {
   }
 };
 
-// Get posts by user ID
+
 const getPostsByUser = async (req, res) => {
   try {
     const posts = await Post.findAll({
